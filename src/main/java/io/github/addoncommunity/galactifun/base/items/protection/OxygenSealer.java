@@ -157,7 +157,7 @@ public final class OxygenSealer extends MenuBlock implements EnergyNetComponent,
         int range = this.range;
         for (BlockFace face : Util.SURROUNDING_FACES) {
             if (BlockStorage.check(b.getRelative(face), BaseItems.SUPER_FAN.getItemId())) {
-                range += range * 0.15;
+                range += range * 0.50;
             }
         }
 
