@@ -46,7 +46,9 @@ import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerGameModeChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerPortalEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
+import org.bukkit.event.world.PortalCreateEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.MetadataValue;
 
@@ -181,6 +183,20 @@ public final class WorldManager implements Listener {
         return Collections.unmodifiableCollection(this.alienWorlds.values());
     }
 
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onPortalCreate(PortalCreateEvent e) {
+        if (!Galactifun.instance().getConfig().getBoolean("worlds.allow-nether-portals") && getAlienWorld(e.getWorld()) != null) {
+            e.setCancelled(true);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void portal(PlayerPortalEvent e){
+        if (!Galactifun.instance().getConfig().getBoolean("worlds.allow-nether-portals") && getAlienWorld(e.getFrom().getWorld()) != null){
+            e.setCancelled(true);
+        }
+    }
+
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlanetChange(@Nonnull PlayerChangedWorldEvent e) {
         AlienWorld object = getAlienWorld(e.getFrom());
@@ -214,14 +230,19 @@ public final class WorldManager implements Listener {
         if (e instanceof PlayerTeleportEndGatewayEvent) return;
         if (!e.getPlayer().hasPermission("galactifun.admin")) {
             if (e.getTo().getWorld() != null && e.getFrom().getWorld() != e.getTo().getWorld()) {
-                PlanetaryWorld world = getWorld(e.getTo().getWorld());
-                PlanetaryWorld world2 = getWorld(e.getFrom().getWorld());
-                if (world != null && world2 != null) {
+                PlanetaryWorld fromWorld = getWorld(e.getFrom().getWorld());
+                PlanetaryWorld toWorld = getWorld(e.getTo().getWorld());
+                if (
+                        (fromWorld != null || toWorld != null)
+                        && !BaseUniverse.EARTH.equals(toWorld)
+                        && !BaseUniverse.EARTH.equals(fromWorld)
+                        || (BaseUniverse.EARTH.equals(fromWorld) && toWorld != null)
+                ) {
                     boolean canTp = false;
                     for (MetadataValue value : e.getPlayer().getMetadata("CanTpAlienWorld")) {
-                        canTp = value.asBoolean();
+                        canTp |= value.asBoolean();
                     }
-                    if (canTp || e.getFrom().getWorld().equals(e.getTo().getWorld())) {
+                    if (canTp) {
                         e.getPlayer().removeMetadata("CanTpAlienWorld", Galactifun.instance());
                     } else {
                         e.setCancelled(true);
