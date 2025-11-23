@@ -11,8 +11,6 @@ import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.generator.ChunkGenerator;
-import org.bukkit.plugin.PluginDescriptionFile;
-import org.bukkit.plugin.java.JavaPluginLoader;
 
 import io.github.addoncommunity.galactifun.api.worlds.AlienWorld;
 import io.github.addoncommunity.galactifun.api.worlds.PlanetaryWorld;
@@ -35,7 +33,6 @@ import io.github.mooy1.infinitylib.core.AbstractAddon;
 import io.github.mooy1.infinitylib.metrics.bukkit.Metrics;
 import io.github.thebusybiscuit.slimefun4.api.MinecraftVersion;
 import io.github.thebusybiscuit.slimefun4.implementation.Slimefun;
-import io.github.thebusybiscuit.slimefun4.libraries.dough.updater.BlobBuildUpdater;
 import io.github.thebusybiscuit.slimefun4.libraries.paperlib.PaperLib;
 
 
@@ -54,11 +51,6 @@ public final class Galactifun extends AbstractAddon {
 
     public Galactifun() {
         super("Slimefun-Addon-Community", "Galactifun", "master", "auto-update");
-    }
-
-    public Galactifun(JavaPluginLoader loader, PluginDescriptionFile description, File dataFolder, File file) {
-        super(loader, description, dataFolder, file, "Slimefun-Addon-Community", "Galactifun", "master", "auto-update");
-        isTest = true;
     }
 
     public static AlienManager alienManager() {
@@ -108,10 +100,6 @@ public final class Galactifun extends AbstractAddon {
 
         new Metrics(this, 11613);
 
-        if (!isTest && this.getConfig().getBoolean("auto-update") && !getPluginVersion().contains("MODIFIED")) {
-            new BlobBuildUpdater(this, this.getFile(), "Galactifun").start();
-        }
-
         this.alienManager = new AlienManager(this);
         this.worldManager = new WorldManager(this);
         this.protectionManager = new ProtectionManager();
@@ -158,7 +146,7 @@ public final class Galactifun extends AbstractAddon {
     public void load() {
         if (!isTest) {
             // Default to not logging world settings
-            Bukkit.spigot().getConfig().set("world-settings.default.verbose", false);
+            getLogger().fine("Tip: set 'world-settings.default.verbose: false' in spigot.yml to disable verbose world logs.");
         }
     }
 
